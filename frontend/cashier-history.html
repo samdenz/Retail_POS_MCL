@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cashier History | Retail POS</title>
+    <link rel="stylesheet" href="css/pos.css">
+</head>
+<body>
+    <header>
+        <nav class="cashier-nav">
+            <a href="pos.html">POS</a>
+            <a href="cashier-history.html">My Sales</a>
+            <a href="profile.html">Profile</a>
+            <button id="logout-btn" style="float:right;">Logout</button>
+        </nav>
+        <h1>My Sales History</h1>
+    </header>
+    <main>
+        <section>
+            <h2>My Transactions</h2>
+            <div id="transactions-list">
+                <!-- Transactions table/list here -->
+            </div>
+        </section>
+        <section>
+            <h2>Daily Summary</h2>
+            <div id="daily-summary">
+                <!-- Daily summary UI here -->
+            </div>
+        </section>
+    </main>
+    <script>
+    // Access control: Only allow cashiers
+    const user = JSON.parse(localStorage.getItem('pos_user'));
+    if (!user || !user.role || user.role.toLowerCase() !== 'cashier') {
+        window.location.href = 'login.html';
+    }
+
+    // TODO: Add JS for cashier history
+    </script>
+</body>
+</html>

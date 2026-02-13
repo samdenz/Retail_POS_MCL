@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Users | Retail POS</title>
+    <link rel="stylesheet" href="css/pos.css">
+</head>
+<body>
+    <header>
+        <nav class="admin-nav">
+            <a href="admin-dashboard.html">Dashboard</a>
+            <a href="admin-inventory.html">Inventory</a>
+            <a href="admin-reports.html">Reports</a>
+            <a href="admin-users.html">Users</a>
+            <a href="profile.html">Profile</a>
+            <button id="logout-btn" style="float:right;">Logout</button>
+        </nav>
+        <h1>User Management</h1>
+    </header>
+    <main>
+        <section>
+            <h2>All Users</h2>
+            <div id="users-list">
+                <!-- Users table/list here -->
+            </div>
+            <button id="add-user-btn">Add User</button>
+        </section>
+        <section>
+            <h2>Activity Logs</h2>
+            <div id="activity-logs">
+                <!-- Activity logs UI here -->
+            </div>
+        </section>
+    </main>
+    <script>
+    // Access control: Only allow admins
+    const user = JSON.parse(localStorage.getItem('pos_user'));
+    if (!user || !user.role || user.role.toLowerCase() !== 'admin') {
+        window.location.href = 'login.html';
+    }
+
+    // TODO: Add JS for user management
+    </script>
+</body>
+</html>

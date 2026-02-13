@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Retail POS</title>
+    <link rel="stylesheet" href="css/pos.css">
+</head>
+<body>
+    <header>
+        <nav class="admin-nav">
+            <a href="admin-dashboard.html">Dashboard</a>
+            <a href="admin-inventory.html">Inventory</a>
+            <a href="admin-reports.html">Reports</a>
+            <a href="admin-users.html">Users</a>
+            <a href="profile.html">Profile</a>
+            <button id="logout-btn" style="float:right;">Logout</button>
+        </nav>
+        <h1>Admin Dashboard</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Quick Stats</h2>
+            <div id="stats">
+                <!-- Stats will be loaded here -->
+            </div>
+        </section>
+        <section>
+            <h2>Recent Transactions</h2>
+            <div id="recent-transactions">
+                <!-- Transactions will be loaded here -->
+            </div>
+        </section>
+        <section>
+            <h2>Low Stock Alerts</h2>
+            <div id="low-stock-alerts">
+                <!-- Low stock alerts will be loaded here -->
+            </div>
+        </section>
+        <section>
+            <h2>Active Users</h2>
+            <div id="active-users">
+                <!-- Active users count will be loaded here -->
+            </div>
+        </section>
+    </main>
+    <script>
+    // Access control: Only allow admins
+    const user = JSON.parse(localStorage.getItem('pos_user'));
+    if (!user || !user.role || user.role.toLowerCase() !== 'admin') {
+        window.location.href = 'login.html';
+    }
+
+    // TODO: Add JS to fetch and display stats, transactions, alerts, users
+    </script>
+</body>
+</html>

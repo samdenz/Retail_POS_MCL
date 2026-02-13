@@ -1,0 +1,67 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+    <header>
+        <nav class="cashier-nav">
+            <a href="pos.html">POS</a>
+            <a href="cashier-history.html">My Sales</a>
+            <a href="profile.html">Profile</a>
+            <button id="logout-btn" style="float:right;">Logout</button>
+        </nav>
+        <h1>Retail Point of Sale System</h1>
+        <input type="text" id="search-bar" placeholder="Search by title or ISBN">
+    </header>
+<body> 
+    <header> 
+        <h1>Retail Point of Sale System</h1> 
+        <input type="text" id="search-bar" placeholder="Search by title or ISBN"> 
+        <div style="display: flex; gap: 10px; margin-left: auto;">
+            <button id="admin-panel-btn" style="display:none;">Admin Panel</button> 
+            <button id="logout-btn">Logout</button> 
+        </div>
+    </header> 
+    <main> 
+        <section id="products-section"> 
+            <!-- Product items will be dynamically inserted here --> 
+        </section> 
+ 
+        <section id="cart"> 
+            <h2>Cart</h2> 
+            <ul id="cart-items"></ul> 
+            <p>Total: KES <span id="total">0</span></p> 
+            <button id="checkout-btn">Checkout</button> 
+        </section> 
+ 
+        <!-- Receipt Modal --> 
+        <div id="receipt-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;"> 
+            <div id="receipt-content" style="background:#fff;color:#222;padding:24px 32px;border-radius:10px;min-width:320px;max-width:90vw;max-height:90vh;overflow:auto;position:relative;"> 
+                <button id="close-receipt" style="position:absolute;top:8px;right:8px;background:#e74c3c;color:#fff;border:none;border-radius:4px;padding:8px 12px;cursor:pointer;font-size:1.2rem;">&times;</button> 
+                <div id="receipt-html"></div> 
+                <div style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button id="print-receipt" class="admin-btn">Print</button> 
+                    <button id="download-receipt" class="admin-btn">Download PDF</button> 
+                </div>
+            </div> 
+        </div> 
+ 
+        <section id="admin-panel" style="display:none;"> 
+            <h2>Admin Panel</h2> 
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                <button id="view-reports-btn" class="admin-btn">View Sales Reports</button> 
+                <button id="manage-books-btn" class="admin-btn">Manage Books</button> 
+                <button id="add-book-btn" class="admin-btn">Add Book</button> 
+                <button id="manage-users-btn" class="admin-btn">Manage Users</button> 
+            </div>
+            <div id="admin-content"></div> 
+        </section> 
+    </main> 
+    <script src="js/pos.js"></script> 
+</body>
+<script>
+// Access control: Only allow cashiers
+const user = JSON.parse(localStorage.getItem('pos_user'));
+if (!user || !user.role || user.role.toLowerCase() !== 'cashier') {
+    window.location.href = 'login.html';
+}
+</script>
+</body> 
+</html>

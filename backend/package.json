@@ -1,0 +1,25 @@
+{
+  "name": "posmcl",
+  "version": "1.0.0",
+  "description": "a retail pos system",
+  "main": "posDb.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "node test-db-connection.js",
+    "create-admin": "node scripts/create-admin.js",
+    "seed": "node scripts/seed-books.js",
+    "backup": "node scripts/backup-db.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.16.2"
+  }
+}

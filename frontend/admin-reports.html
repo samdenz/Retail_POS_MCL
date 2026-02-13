@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Reports | Retail POS</title>
+    <link rel="stylesheet" href="css/pos.css">
+</head>
+<body>
+    <header>
+        <nav class="admin-nav">
+            <a href="admin-dashboard.html">Dashboard</a>
+            <a href="admin-inventory.html">Inventory</a>
+            <a href="admin-reports.html">Reports</a>
+            <a href="admin-users.html">Users</a>
+            <a href="profile.html">Profile</a>
+            <button id="logout-btn" style="float:right;">Logout</button>
+        </nav>
+        <h1>Reports</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Sales Reports</h2>
+            <div id="sales-reports">
+                <!-- Sales reports UI here -->
+            </div>
+        </section>
+        <section>
+            <h2>Inventory Reports</h2>
+            <div id="inventory-reports">
+                <!-- Inventory reports UI here -->
+            </div>
+        </section>
+        <section>
+            <h2>User Performance</h2>
+            <div id="user-performance">
+                <!-- User performance UI here -->
+            </div>
+        </section>
+    </main>
+    <script>
+    // Access control: Only allow admins
+    const user = JSON.parse(localStorage.getItem('pos_user'));
+    if (!user || !user.role || user.role.toLowerCase() !== 'admin') {
+        window.location.href = 'login.html';
+    }
+
+    // TODO: Add JS for reports
+    </script>
+</body>
+</html>

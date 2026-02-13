@@ -1,0 +1,12 @@
+{
+  "name": "retail-pos-mcl",
+  "version": "1.0.0",
+  "main": "main.js",
+  "description": "Retail POS Electron App",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^40.4.0"
+  }
+}

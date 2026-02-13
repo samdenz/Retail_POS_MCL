@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | Retail POS</title>
+    <link rel="stylesheet" href="css/pos.css">
+</head>
+<body>
+    <header>
+        <nav class="shared-nav">
+            <a href="profile.html">Profile</a>
+            <a href="#" id="role-link"></a>
+            <button id="logout-btn" style="float:right;">Logout</button>
+        </nav>
+        <h1>My Profile</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Personal Info</h2>
+            <div id="personal-info">
+                <!-- Personal info UI here -->
+            </div>
+        </section>
+        <section>
+            <h2>Change Password</h2>
+            <div id="change-password">
+                <!-- Change password form here -->
+            </div>
+        </section>
+        <section>
+            <h2>Activity History</h2>
+            <div id="activity-history">
+                <!-- Activity history UI here -->
+            </div>
+        </section>
+    </main>
+    <script>
+    // Access control: Only allow logged in users
+    const user = JSON.parse(localStorage.getItem('pos_user'));
+    if (!user || !user.role) {
+        window.location.href = 'login.html';
+    }
+
+    // Dynamic nav link based on role
+    const roleLink = document.getElementById('role-link');
+    if (user.role.toLowerCase() === 'admin') {
+        roleLink.textContent = 'Admin Dashboard';
+        roleLink.href = 'admin-dashboard.html';
+    } else {
+        roleLink.textContent = 'POS';
+        roleLink.href = 'pos.html';
+    }
+
+    // TODO: Add JS for profile page
+    </script>
+</body>
+</html>

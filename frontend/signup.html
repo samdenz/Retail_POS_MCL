@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retail POS | Create Staff Account</title>
+
+<style>
+:root {
+    --primary: #2a5298;
+    --secondary: #1e3c72;
+    --bg: #0f172a;
+    --card: #111827;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --error: #ef4444;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--secondary), var(--primary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+}
+
+.wrapper {
+    width: 100%;
+    max-width: 460px;
+    padding: 20px;
+}
+
+.card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 32px 28px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+    animation: fadeUp 0.5s ease;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(25px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 22px;
+}
+
+.input-group {
+    margin-bottom: 14px;
+}
+
+label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: var(--muted);
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #374151;
+    background: #020617;
+    color: var(--text);
+    font-size: 14px;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(42,82,152,0.25);
+}
+
+.password-group {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.error {
+    text-align: center;
+    color: var(--error);
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: none;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 6px;
+}
+
+button:hover {
+    background: var(--secondary);
+}
+
+.footer-text {
+    text-align: center;
+    font-size: 13px;
+    margin-top: 14px;
+    color: var(--muted);
+}
+
+.footer-text a {
+    color: #93c5fd;
+    text-decoration: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+    <div class="card">
+
+        <h2>Create Staff Account</h2>
+        <div class="subtitle">Retail POS – Admin Setup</div>
+
+        <form id="signup-form">
+
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="fullName" required>
+            </div>
+
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="username" required>
+            </div>
+
+            <div class="input-group">
+                <label>Email</label>
+                <input type="text" id="contact" required>
+            </div>
+
+            <div class="input-group">
+                <label>Phone</label>
+                <input type="text" id="phone" required>
+            </div>
+
+
+            <div class="input-group">
+                <label>Role</label>
+                <select id="role" required>
+                    <option value="">Select role</option>
+                    <option value="admin">Admin</option>
+                    <option value="cashier">Cashier</option>
+                </select>
+            </div>
+
+            <div class="input-group password-group">
+                <label>Password</label>
+                <input type="password" id="password" required>
+                <span class="toggle-password" onclick="togglePassword('password')">👁</span>
+            </div>
+
+            <div class="input-group password-group">
+                <label>Confirm Password</label>
+                <input type="password" id="confirmPassword" required>
+                <span class="toggle-password" onclick="togglePassword('confirmPassword')">👁</span>
+            </div>
+
+            <div class="error" id="errorMsg"></div>
+
+            <button type="submit">Create Account</button>
+
+        </form>
+
+        <div class="footer-text">
+            Already have an account?
+            <a href="login.html">Login</a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function togglePassword(id) {
+    const input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
+}
+
+document.getElementById("signup-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const fullName = document.getElementById("fullName").value;
+    const username = document.getElementById("username").value;
+    const email = document.getElementById("contact").value;
+    const phone = document.getElementById("phone").value;
+    const role = document.getElementById("role").value;
+    const pwd = document.getElementById("password").value;
+    const confirm = document.getElementById("confirmPassword").value;
+    const errorMsg = document.getElementById("errorMsg");
+
+    if (pwd !== confirm) {
+        errorMsg.style.display = "block";
+        errorMsg.textContent = "Passwords do not match";
+        return;
+    }
+
+    errorMsg.style.display = "none";
+
+    // Get JWT token from localStorage
+    const token = localStorage.getItem('pos_token');
+    if (!token) {
+        errorMsg.style.display = "block";
+        errorMsg.textContent = "You must be logged in as admin to create accounts.";
+        return;
+    }
+
+    fetch('/api/users', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({
+            username: username,
+            password: pwd,
+            role: role,
+            fullName: fullName,
+            email: email,
+            phone: phone
+        })
+    })
+    .then(async res => {
+        const data = await res.json();
+        if (res.ok && data.success) {
+            alert('Account created successfully!');
+            window.location.href = 'login.html';
+        } else {
+            errorMsg.style.display = "block";
+            errorMsg.textContent = data.message || 'Failed to create account.';
+        }
+    })
+    .catch(() => {
+        errorMsg.style.display = "block";
+        errorMsg.textContent = 'Network error. Please try again.';
+    });
+});
+</script>
+
+</body>
+</html>
