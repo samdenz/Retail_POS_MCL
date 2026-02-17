@@ -31,9 +31,9 @@
         </section>
     </main>
     <script>
-    // Access control: Only allow cashiers
+    // Access control: Allow admin and cashier
     const user = JSON.parse(localStorage.getItem('pos_user'));
-    if (!user || !user.role || user.role.toLowerCase() !== 'cashier') {
+    if (!user || !user.role || (user.role.toLowerCase() !== 'cashier' && user.role.toLowerCase() !== 'admin')) {
         window.location.href = 'login.html';
     }
 
