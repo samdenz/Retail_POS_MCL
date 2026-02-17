@@ -3,8 +3,10 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
 const { pool } = require('../db'); // Updated import
-
 const jwt = require('jsonwebtoken');
+
+// Simple in-memory JWT blacklist (for demo; use Redis or DB in production)
+const jwtBlacklist = new Set();
 
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
@@ -77,7 +79,9 @@ router.post('/login', async (req, res) => {
 
 // POST /api/auth/logout
 router.post('/logout', (req, res) => {
-  // TODO: Clear session or invalidate JWT token
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  if (token) jwtBlacklist.add(token);
   res.json({ 
     success: true,
     message: 'Logout successful' 
@@ -89,6 +93,9 @@ function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
   if (!token) return res.status(401).json({ success: false, message: 'No token provided' });
+  if (jwtBlacklist.has(token)) {
+    return res.status(403).json({ success: false, message: 'Token has been logged out' });
+  }
   jwt.verify(token, process.env.JWT_SECRET || 'changeme', (err, user) => {
     if (err) return res.status(403).json({ success: false, message: 'Invalid token' });
     req.user = user;

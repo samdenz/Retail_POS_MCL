@@ -55,11 +55,117 @@
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 localStorage.removeItem('pos_user');
+                localStorage.removeItem('pos_token');
                 window.location.href = 'login.html';
             });
         }
+        loadProfileInfo();
+        loadActivityHistory();
+        setupChangePassword();
     });
-    // TODO: Add JS for profile page
+
+    // Display user info
+    function loadProfileInfo() {
+        const infoDiv = document.getElementById('personal-info');
+        if (!infoDiv) return;
+        infoDiv.innerHTML = `
+            <div class="card">
+                <strong>Username:</strong> ${user.username}<br>
+                <strong>Role:</strong> ${user.role}<br>
+                <strong>Full Name:</strong> ${user.full_name || 'N/A'}
+            </div>
+        `;
+    }
+
+    // Change password form
+    function setupChangePassword() {
+        const changeDiv = document.getElementById('change-password');
+        if (!changeDiv) return;
+        changeDiv.innerHTML = `
+            <form id="change-pwd-form" class="card" style="max-width:400px;">
+                <label>Current Password</label>
+                <input type="password" id="currentPwd" required><br>
+                <label>New Password</label>
+                <input type="password" id="newPwd" required><br>
+                <label>Confirm New Password</label>
+                <input type="password" id="confirmPwd" required><br>
+                <div id="pwdError" style="color:#e74c3c;margin:8px 0;display:none;"></div>
+                <button type="submit">Change Password</button>
+            </form>
+        `;
+        document.getElementById('change-pwd-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const current = document.getElementById('currentPwd').value;
+            const newPwd = document.getElementById('newPwd').value;
+            const confirm = document.getElementById('confirmPwd').value;
+            const errorDiv = document.getElementById('pwdError');
+            errorDiv.style.display = 'none';
+            if (newPwd !== confirm) {
+                errorDiv.textContent = 'New passwords do not match.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            try {
+                const token = localStorage.getItem('pos_token');
+                const res = await fetch('http://localhost:3000/api/auth/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        user_id: user.user_id,
+                        current_password: current,
+                        new_password: newPwd
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.message || 'Failed to change password');
+                }
+                alert('Password changed successfully!');
+                document.getElementById('change-pwd-form').reset();
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+            }
+        };
+    }
+
+    // Activity history (sales)
+    async function loadActivityHistory() {
+        const historyDiv = document.getElementById('activity-history');
+        if (!historyDiv) return;
+        historyDiv.innerHTML = '<div class="card">Loading...</div>';
+        try {
+            const token = localStorage.getItem('pos_token');
+            const res = await fetch(`http://localhost:3000/api/sales/user/${user.user_id}?limit=10`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.message || 'Failed to load history');
+            if (!data.sales.length) {
+                historyDiv.innerHTML = '<div class="card">No recent activity.</div>';
+                return;
+            }
+            historyDiv.innerHTML = `
+                <div class="card">
+                    <strong>Recent Transactions</strong>
+                    <ul style="padding-left:0;list-style:none;">
+                        ${data.sales.map(sale => `
+                            <li style="margin-bottom:8px;">
+                                <span><b>Date:</b> ${new Date(sale.sale_date).toLocaleString()}</span><br>
+                                <span><b>Amount:</b> KES ${parseFloat(sale.total_amount).toFixed(2)}</span><br>
+                                <span><b>Payment:</b> ${sale.payment_method}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `;
+        } catch (err) {
+            historyDiv.innerHTML = `<div class="card" style="color:#e74c3c;">${err.message}</div>`;
+        }
+    }
     </script>
 </html>
 <style>

@@ -1,5 +1,12 @@
-<!DOCTYPE html> 
-<html lang="en"> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS | Retail POS</title>
+    <link rel="stylesheet" href="css/pos.css">
+</head>
+<body>
     <header>
         <nav class="cashier-nav">
             <a href="pos.html">POS</a>
@@ -9,16 +16,10 @@
         </nav>
         <h1>Retail Point of Sale System</h1>
         <input type="text" id="search-bar" placeholder="Search by title or ISBN">
-    </header>
-<body> 
-    <header> 
-        <h1>Retail Point of Sale System</h1> 
-        <input type="text" id="search-bar" placeholder="Search by title or ISBN"> 
         <div style="display: flex; gap: 10px; margin-left: auto;">
-            <button id="admin-panel-btn" style="display:none;">Admin Panel</button> 
-            <button id="logout-btn">Logout</button> 
+            <button id="admin-panel-btn" style="display:none;">Admin Panel</button>
         </div>
-    </header> 
+    </header>
     <main> 
         <section id="products-section"> 
             <!-- Product items will be dynamically inserted here --> 
@@ -54,14 +55,13 @@
             <div id="admin-content"></div> 
         </section> 
     </main> 
-    <script src="js/pos.js"></script> 
+    <script src="js/pos.js"></script>
+    <script>
+    // Access control: Allow admin and cashier
+    const user = JSON.parse(localStorage.getItem('pos_user'));
+    if (!user || !user.role || (user.role.toLowerCase() !== 'cashier' && user.role.toLowerCase() !== 'admin')) {
+        window.location.href = 'login.html';
+    }
+    </script>
 </body>
-<script>
-// Access control: Allow admin and cashier
-const user = JSON.parse(localStorage.getItem('pos_user'));
-if (!user || !user.role || (user.role.toLowerCase() !== 'cashier' && user.role.toLowerCase() !== 'admin')) {
-    window.location.href = 'login.html';
-}
-</script>
-</body> 
 </html>

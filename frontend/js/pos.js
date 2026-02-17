@@ -1,3 +1,13 @@
+// Dynamically load jsPDF if not present
+if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    script.onload = () => {
+        // jsPDF loaded
+    };
+    document.head.appendChild(script);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // ===============================
@@ -322,8 +332,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadReceipt = document.getElementById('download-receipt');
     if (downloadReceipt) {
         downloadReceipt.onclick = () => {
-            alert('PDF download feature coming soon!');
-            // TODO: Implement PDF generation using jsPDF or similar library
+            // PDF generation using jsPDF
+            if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
+                alert('jsPDF library not loaded.');
+                return;
+            }
+            const jsPDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+            const htmlDiv = document.getElementById('receipt-html');
+            if (!htmlDiv) return;
+            const doc = new jsPDF();
+            // Simple text extraction from receipt HTML
+            let text = htmlDiv.innerText || htmlDiv.textContent || '';
+            // Split into lines for better formatting
+            const lines = doc.splitTextToSize(text, 180);
+            doc.text(lines, 10, 20);
+            doc.save('receipt.pdf');
         };
     }
 

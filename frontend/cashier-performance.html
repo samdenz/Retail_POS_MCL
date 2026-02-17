@@ -80,6 +80,7 @@
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 localStorage.removeItem('pos_user');
+                localStorage.removeItem('pos_token');
                 window.location.href = 'login.html';
             });
         }
@@ -91,7 +92,10 @@
         const tableBody = document.querySelector('#performance-table tbody');
         tableBody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
         try {
-            const res = await fetch('/api/admin/cashier-performance');
+            const token = localStorage.getItem('pos_token');
+            const res = await fetch('http://localhost:3000/api/admin/cashier-performance', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
             const data = await res.json();
             if (Array.isArray(data) && data.length > 0) {
                 tableBody.innerHTML = data.map(row => `

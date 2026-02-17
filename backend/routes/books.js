@@ -1,3 +1,35 @@
+// POST /api/books/bulk - Bulk upload books (Admin only)
+router.post('/bulk', authenticateToken, requireAdmin, async (req, res) => {
+  const { books } = req.body;
+  if (!Array.isArray(books) || !books.length) {
+    return res.status(400).json({ success: false, message: 'Books array required' });
+  }
+  let added = 0, skipped = 0, errors = [];
+  for (let i = 0; i < books.length; i++) {
+    const { title, author, isbn, price, quantity } = books[i];
+    if (!title || price === undefined || quantity === undefined) {
+      errors.push(`Row ${i+1}: Missing required fields`);
+      skipped++;
+      continue;
+    }
+    try {
+      await pool.execute(
+        `INSERT INTO books (title, author, isbn, price, quantity, low_stock_threshold)
+         VALUES (?, ?, ?, ?, ?, 5)`,
+        [title, author || null, isbn || null, price, quantity]
+      );
+      added++;
+    } catch (err) {
+      if (err.code === 'ER_DUP_ENTRY') {
+        skipped++;
+      } else {
+        errors.push(`Row ${i+1}: ${err.message}`);
+        skipped++;
+      }
+    }
+  }
+  res.json({ success: true, added, skipped, errors });
+});
 // routes/books.js
 const express = require('express');
 const router = express.Router();
@@ -72,6 +104,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+
 const jwt = require('jsonwebtoken');
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
@@ -83,9 +116,15 @@ function authenticateToken(req, res, next) {
     next();
   });
 }
+function requireAdmin(req, res, next) {
+  if (!req.user || req.user.role !== 'ADMIN') {
+    return res.status(403).json({ success: false, message: 'Admin access required' });
+  }
+  next();
+}
 
 // POST /api/books - Add new book (Admin only)
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, requireAdmin, async (req, res) => {
   const { title, isbn, author, price, quantity, low_stock_threshold } = req.body;
 
   // TODO: Add authentication middleware to check if user is admin
@@ -131,7 +170,7 @@ router.post('/', authenticateToken, async (req, res) => {
 });
 
 // PUT /api/books/:id - Update book (Admin only)
-router.put('/:id', authenticateToken, async (req, res) => {
+router.put('/:id', authenticateToken, requireAdmin, async (req, res) => {
   const { id } = req.params;
   const { title, isbn, author, price, quantity, low_stock_threshold } = req.body;
 
@@ -204,7 +243,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/books/:id - Delete book (Admin only)
-router.delete('/:id', authenticateToken, async (req, res) => {
+router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   const { id } = req.params;
 
   // TODO: Add authentication middleware to check if user is admin
@@ -247,7 +286,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // GET /api/books/low-stock - Get books below threshold (Admin only)
-router.get('/reports/low-stock', authenticateToken, async (req, res) => {
+router.get('/reports/low-stock', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const [books] = await pool.execute(
       `SELECT book_id, title, isbn, quantity, low_stock_threshold

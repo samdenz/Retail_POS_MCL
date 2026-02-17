@@ -60,45 +60,117 @@
 
     // Dynamic loading for dashboard
     async function loadStats() {
-        // Example: Replace with real API endpoint
-        const stats = await fetch('/api/admin/stats').then(r => r.json()).catch(() => ({sales: 0, inventory: 0, users: 0, revenue: 0}));
+        const token = localStorage.getItem('pos_token');
+        let stats = {sales: 0, inventory: 0, users: 0, revenue: 0};
+        let error = null;
+        try {
+            const res = await fetch('http://localhost:3000/api/admin/stats', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                stats = data;
+            } else {
+                error = data.message || 'Failed to load stats';
+            }
+        } catch (err) {
+            error = err.message;
+        }
         const statsDiv = document.getElementById('stats');
-        statsDiv.innerHTML = `
-            <div class="card"><strong>Sales</strong><br>${stats.sales}</div>
-            <div class="card"><strong>Inventory</strong><br>${stats.inventory}</div>
-            <div class="card"><strong>Users</strong><br>${stats.users}</div>
-            <div class="card"><strong>Revenue</strong><br>$${stats.revenue}</div>
-        `;
+        if (error) {
+            statsDiv.innerHTML = `<div class="card" style="color:#e74c3c;">${error}</div>`;
+        } else {
+            statsDiv.innerHTML = `
+                <div class="card"><strong>Sales</strong><br>${stats.sales}</div>
+                <div class="card"><strong>Inventory</strong><br>${stats.inventory}</div>
+                <div class="card"><strong>Users</strong><br>${stats.users}</div>
+                <div class="card"><strong>Revenue</strong><br>$${stats.revenue}</div>
+            `;
+        }
     }
 
     async function loadTransactions() {
-        // Example: Replace with real API endpoint
-        const txns = await fetch('/api/admin/recent-transactions').then(r => r.json()).catch(() => []);
+        const token = localStorage.getItem('pos_token');
+        let txns = [];
+        let error = null;
+        try {
+            const res = await fetch('http://localhost:3000/api/admin/recent-transactions', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                txns = data.data;
+            } else {
+                error = data.message || 'Failed to load transactions';
+            }
+        } catch (err) {
+            error = err.message;
+        }
         const txnsDiv = document.getElementById('recent-transactions');
-        txnsDiv.innerHTML = txns.length ? txns.map(tx => `
-            <div class="txn-row">
-                <span><strong>${tx.id}</strong> - ${tx.date}</span>
-                <span>${tx.amount} - ${tx.user}</span>
-            </div>
-        `).join('') : '<em>No recent transactions.</em>';
+        if (error) {
+            txnsDiv.innerHTML = `<div class="card" style="color:#e74c3c;">${error}</div>`;
+        } else {
+            txnsDiv.innerHTML = txns.length ? txns.map(tx => `
+                <div class="txn-row">
+                    <span><strong>${tx.id}</strong> - ${tx.date}</span>
+                    <span>${tx.amount} - ${tx.user}</span>
+                </div>
+            `).join('') : '<em>No recent transactions.</em>';
+        }
     }
 
     async function loadLowStock() {
-        // Example: Replace with real API endpoint
-        const alerts = await fetch('/api/admin/low-stock').then(r => r.json()).catch(() => []);
+        const token = localStorage.getItem('pos_token');
+        let alerts = [];
+        let error = null;
+        try {
+            const res = await fetch('http://localhost:3000/api/admin/low-stock', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                alerts = data.data;
+            } else {
+                error = data.message || 'Failed to load low stock alerts';
+            }
+        } catch (err) {
+            error = err.message;
+        }
         const alertsDiv = document.getElementById('low-stock-alerts');
-        alertsDiv.innerHTML = alerts.length ? alerts.map(item => `
-            <div class="alert-row">
-                <span><strong>${item.name}</strong> (${item.quantity} left)</span>
-            </div>
-        `).join('') : '<em>No low stock alerts.</em>';
+        if (error) {
+            alertsDiv.innerHTML = `<div class="card" style="color:#e74c3c;">${error}</div>`;
+        } else {
+            alertsDiv.innerHTML = alerts.length ? alerts.map(item => `
+                <div class="alert-row">
+                    <span><strong>${item.name}</strong> (${item.quantity} left)</span>
+                </div>
+            `).join('') : '<em>No low stock alerts.</em>';
+        }
     }
 
     async function loadActiveUsers() {
-        // Example: Replace with real API endpoint
-        const users = await fetch('/api/admin/active-users').then(r => r.json()).catch(() => 0);
+        const token = localStorage.getItem('pos_token');
+        let users = 0;
+        let error = null;
+        try {
+            const res = await fetch('http://localhost:3000/api/admin/active-users', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                users = data.count;
+            } else {
+                error = data.message || 'Failed to load active users';
+            }
+        } catch (err) {
+            error = err.message;
+        }
         const usersDiv = document.getElementById('active-users');
-        usersDiv.innerHTML = `<div class="card"><strong>Active Users:</strong> ${users}</div>`;
+        if (error) {
+            usersDiv.innerHTML = `<div class="card" style="color:#e74c3c;">${error}</div>`;
+        } else {
+            usersDiv.innerHTML = `<div class="card"><strong>Active Users:</strong> ${users}</div>`;
+        }
     }
 
     // Back button navigation and load all sections
@@ -113,6 +185,7 @@
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 localStorage.removeItem('pos_user');
+                localStorage.removeItem('pos_token');
                 window.location.href = 'login.html';
             });
         }

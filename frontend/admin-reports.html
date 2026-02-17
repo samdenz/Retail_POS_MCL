@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Reports | Retail POS</title>
     <link rel="stylesheet" href="css/pos.css">
+    <script src="js/admin-reports.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -55,6 +56,7 @@
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 localStorage.removeItem('pos_user');
+                localStorage.removeItem('pos_token');
                 window.location.href = 'login.html';
             });
         }
