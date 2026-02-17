@@ -7,43 +7,50 @@
     <link rel="stylesheet" href="css/pos.css">
 </head>
 <body>
-    <header>
-        <nav class="admin-nav">
-            <a href="admin-dashboard.html">Dashboard</a>
-            <a href="admin-inventory.html">Inventory</a>
-            <a href="admin-reports.html">Reports</a>
-            <a href="admin-users.html">Users</a>
-            <a href="profile.html">Profile</a>
-            <button id="logout-btn" style="float:right;">Logout</button>
-        </nav>
-        <h1>Admin Dashboard</h1>
-    </header>
-    <main>
-        <section>
-            <h2>Quick Stats</h2>
-            <div id="stats">
-                <!-- Stats will be loaded here -->
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Retail POS</h2>
             </div>
-        </section>
-        <section>
-            <h2>Recent Transactions</h2>
-            <div id="recent-transactions">
-                <!-- Transactions will be loaded here -->
-            </div>
-        </section>
-        <section>
-            <h2>Low Stock Alerts</h2>
-            <div id="low-stock-alerts">
-                <!-- Low stock alerts will be loaded here -->
-            </div>
-        </section>
-        <section>
-            <h2>Active Users</h2>
-            <div id="active-users">
-                <!-- Active users count will be loaded here -->
-            </div>
-        </section>
-    </main>
+            <nav>
+                <a href="admin-dashboard.html" class="active">Dashboard</a>
+                <a href="admin-inventory.html">Inventory</a>
+                <a href="admin-reports.html">Reports</a>
+                <a href="admin-users.html">Users</a>
+                <a href="profile.html">Profile</a>
+                <button id="back-btn">Back</button>
+                <button id="logout-btn">Logout</button>
+            </nav>
+            <!-- Sidebar navigation only, script moved below for best practice -->
+        </aside>
+        <main class="main-content">
+            <h1>Admin Dashboard</h1>
+            <section class="stats-section">
+                <h2>Quick Stats</h2>
+                <div class="stats-cards" id="stats">
+                    <!-- Card-based stats will be loaded here -->
+                </div>
+            </section>
+            <section>
+                <h2>Recent Transactions</h2>
+                <div class="card" id="recent-transactions">
+                    <!-- Transactions will be loaded here -->
+                </div>
+            </section>
+            <section>
+                <h2>Low Stock Alerts</h2>
+                <div class="card" id="low-stock-alerts">
+                    <!-- Low stock alerts will be loaded here -->
+                </div>
+            </section>
+            <section>
+                <h2>Active Users</h2>
+                <div class="card" id="active-users">
+                    <!-- Active users count will be loaded here -->
+                </div>
+            </section>
+        </main>
+    </div>
     <script>
     // Access control: Only allow admins
     const user = JSON.parse(localStorage.getItem('pos_user'));
@@ -51,7 +58,164 @@
         window.location.href = 'login.html';
     }
 
-    // TODO: Add JS to fetch and display stats, transactions, alerts, users
+    // Dynamic loading for dashboard
+    async function loadStats() {
+        // Example: Replace with real API endpoint
+        const stats = await fetch('/api/admin/stats').then(r => r.json()).catch(() => ({sales: 0, inventory: 0, users: 0, revenue: 0}));
+        const statsDiv = document.getElementById('stats');
+        statsDiv.innerHTML = `
+            <div class="card"><strong>Sales</strong><br>${stats.sales}</div>
+            <div class="card"><strong>Inventory</strong><br>${stats.inventory}</div>
+            <div class="card"><strong>Users</strong><br>${stats.users}</div>
+            <div class="card"><strong>Revenue</strong><br>$${stats.revenue}</div>
+        `;
+    }
+
+    async function loadTransactions() {
+        // Example: Replace with real API endpoint
+        const txns = await fetch('/api/admin/recent-transactions').then(r => r.json()).catch(() => []);
+        const txnsDiv = document.getElementById('recent-transactions');
+        txnsDiv.innerHTML = txns.length ? txns.map(tx => `
+            <div class="txn-row">
+                <span><strong>${tx.id}</strong> - ${tx.date}</span>
+                <span>${tx.amount} - ${tx.user}</span>
+            </div>
+        `).join('') : '<em>No recent transactions.</em>';
+    }
+
+    async function loadLowStock() {
+        // Example: Replace with real API endpoint
+        const alerts = await fetch('/api/admin/low-stock').then(r => r.json()).catch(() => []);
+        const alertsDiv = document.getElementById('low-stock-alerts');
+        alertsDiv.innerHTML = alerts.length ? alerts.map(item => `
+            <div class="alert-row">
+                <span><strong>${item.name}</strong> (${item.quantity} left)</span>
+            </div>
+        `).join('') : '<em>No low stock alerts.</em>';
+    }
+
+    async function loadActiveUsers() {
+        // Example: Replace with real API endpoint
+        const users = await fetch('/api/admin/active-users').then(r => r.json()).catch(() => 0);
+        const usersDiv = document.getElementById('active-users');
+        usersDiv.innerHTML = `<div class="card"><strong>Active Users:</strong> ${users}</div>`;
+    }
+
+    // Back button navigation and load all sections
+    window.addEventListener('DOMContentLoaded', () => {
+        const backBtn = document.getElementById('back-btn');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                window.history.back();
+            });
+        }
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                localStorage.removeItem('pos_user');
+                window.location.href = 'login.html';
+            });
+        }
+        loadStats();
+        loadTransactions();
+        loadLowStock();
+        loadActiveUsers();
+    });
     </script>
 </body>
 </html>
+<style>
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+.sidebar {
+    background: #222;
+    color: #fff;
+    width: 220px;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    min-height: 100vh;
+}
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.sidebar nav a, .sidebar nav button {
+    color: #fff;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-decoration: none;
+}
+.sidebar nav a.active, .sidebar nav a:hover, .sidebar nav button:hover {
+    background: #444;
+}
+.main-content {
+    flex: 1;
+    padding: 40px;
+    background: #f5f5f5;
+}
+.main-content h1 {
+    margin-bottom: 30px;
+}
+.stats-section {
+    margin-bottom: 40px;
+}
+.stats-cards {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.stats-cards .card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    padding: 24px 32px;
+    min-width: 180px;
+    flex: 1;
+    text-align: center;
+    font-size: 18px;
+    color: #222;
+}
+.card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    padding: 24px 32px;
+    margin-bottom: 24px;
+}
+@media (max-width: 900px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        min-height: auto;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 10px 0;
+    }
+    .sidebar nav {
+        flex-direction: row;
+        gap: 5px;
+    }
+    .main-content {
+        padding: 20px;
+    }
+    .stats-cards {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+</style>

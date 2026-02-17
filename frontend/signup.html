@@ -217,11 +217,8 @@ function togglePassword(id) {
 document.getElementById("signup-form").addEventListener("submit", function(e) {
     e.preventDefault();
 
-    const fullName = document.getElementById("fullName").value;
     const username = document.getElementById("username").value;
-    const email = document.getElementById("contact").value;
-    const phone = document.getElementById("phone").value;
-    const role = document.getElementById("role").value;
+    const role = document.getElementById("role").value.toUpperCase();
     const pwd = document.getElementById("password").value;
     const confirm = document.getElementById("confirmPassword").value;
     const errorMsg = document.getElementById("errorMsg");
@@ -251,10 +248,7 @@ document.getElementById("signup-form").addEventListener("submit", function(e) {
         body: JSON.stringify({
             username: username,
             password: pwd,
-            role: role,
-            fullName: fullName,
-            email: email,
-            phone: phone
+            role: role
         })
     })
     .then(async res => {

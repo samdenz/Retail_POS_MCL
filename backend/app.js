@@ -38,6 +38,7 @@ const authRoutes = require('./routes/auth');
 const booksRoutes = require('./routes/books');
 const salesRoutes = require('./routes/sales');
 const usersRoutes = require('./routes/users');
+const adminRoutes = require('./routes/admin');
 
 // JWT authentication middleware (for use in other routes)
 function authenticateToken(req, res, next) {
@@ -58,6 +59,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/books', booksRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/admin', adminRoutes);
+
+// Serve static files (HTML, CSS, JS)
+app.use(express.static('public'));
 
 // Root endpoint
 app.get('/', (req, res) => {
