@@ -175,11 +175,7 @@ button:hover {
 
             <div class="input-group">
                 <label>Role</label>
-                <select id="role" required>
-                    <option value="">Select role</option>
-                    <option value="admin">Admin</option>
-                    <option value="cashier">Cashier</option>
-                </select>
+                <input type="text" id="role" value="admin" readonly style="background:#222;color:#aaa;">
             </div>
 
             <div class="input-group password-group">
@@ -231,30 +227,22 @@ document.getElementById("signup-form").addEventListener("submit", function(e) {
 
     errorMsg.style.display = "none";
 
-    // Get JWT token from localStorage
-    const token = localStorage.getItem('pos_token');
-    if (!token) {
-        errorMsg.style.display = "block";
-        errorMsg.textContent = "You must be logged in as admin to create accounts.";
-        return;
-    }
-
+    // Only allow admin creation (for initial setup or by superadmin)
     fetch('/api/users', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({
             username: username,
             password: pwd,
-            role: role
+            role: 'ADMIN'
         })
     })
     .then(async res => {
         const data = await res.json();
         if (res.ok && data.success) {
-            alert('Account created successfully!');
+            alert('Admin account created successfully!');
             window.location.href = 'login.html';
         } else {
             errorMsg.style.display = "block";

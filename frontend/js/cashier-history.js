@@ -7,11 +7,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(localStorage.getItem('pos_user'));
     if (!user) return;
 
-    // Load transactions
-    async function loadTransactions() {
+    // Load transactions with optional date filter
+    async function loadTransactions(date = null) {
         transactionsList.innerHTML = '<div class="card">Loading transactions...</div>';
+        let url = `http://localhost:3000/api/sales/user/${user.user_id}?limit=20`;
+        if (date) {
+            url += `&date=${date}`;
+        }
         try {
-            const res = await fetch(`http://localhost:3000/api/sales/user/${user.user_id}?limit=20`, {
+            const res = await fetch(url, {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
             const data = await res.json();
@@ -21,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             transactionsList.innerHTML = `
-                <table style="width:100%;border-collapse:collapse;">
+                <table id="sales-table" style="width:100%;border-collapse:collapse;">
                     <tr style="background:#2a5298;color:#fff;">
                         <th>Date</th><th>Amount</th><th>Payment</th>
                     </tr>
@@ -60,6 +64,37 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             dailySummary.innerHTML = `<div class="card" style="color:#e74c3c;">${err.message}</div>`;
         }
+    }
+
+    // Filter button
+    const filterBtn = document.getElementById('filter-btn');
+    const filterDate = document.getElementById('filter-date');
+    if (filterBtn && filterDate) {
+        filterBtn.onclick = () => {
+            const dateVal = filterDate.value;
+            loadTransactions(dateVal || null);
+        };
+    }
+
+    // Print button
+    const printBtn = document.getElementById('print-btn');
+    if (printBtn) {
+        printBtn.onclick = () => {
+            const table = document.getElementById('sales-table');
+            if (!table) {
+                alert('No sales to print.');
+                return;
+            }
+            const printWindow = window.open('', '', 'width=800,height=600');
+            printWindow.document.write('<html><head><title>Sales Report</title>');
+            printWindow.document.write('<style>table{width:100%;border-collapse:collapse;}th,td{border:1px solid #222;padding:8px;}th{background:#2a5298;color:#fff;}</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write('<h2>Sales Report</h2>');
+            printWindow.document.write(table.outerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        };
     }
 
     loadTransactions();

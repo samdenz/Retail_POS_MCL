@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Cashier | Admin</title>
+    <link rel="stylesheet" href="css/pos.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Retail POS</h2>
+            </div>
+            <nav>
+                <a href="admin-dashboard.html">Dashboard</a>
+                <a href="admin-inventory.html">Inventory</a>
+                <a href="admin-reports.html">Reports</a>
+                <a href="admin-users.html">Users</a>
+                <a href="profile.html">Profile</a>
+                <button id="logout-btn">Logout</button>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <h1>Add Cashier Account</h1>
+            <form id="add-cashier-form" style="max-width:400px;">
+                <label for="username">Username</label>
+                <input type="text" id="username" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" required>
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" required>
+                <div id="errorMsg" style="color:#e74c3c;display:none;margin:8px 0;"></div>
+                <button type="submit">Add Cashier</button>
+            </form>
+        </main>
+    </div>
+    <script src="js/admin-users.js"></script>
+</body>
+</html>

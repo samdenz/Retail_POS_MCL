@@ -1,3 +1,50 @@
+// Add cashier form logic for admin-add-cashier.html
+document.addEventListener('DOMContentLoaded', () => {
+    const addCashierForm = document.getElementById('add-cashier-form');
+    if (addCashierForm) {
+        addCashierForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            const errorDiv = document.getElementById('errorMsg');
+            errorDiv.style.display = 'none';
+            if (!username || !password || !confirm) {
+                errorDiv.textContent = 'All fields are required.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            if (password !== confirm) {
+                errorDiv.textContent = 'Passwords do not match.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            const token = localStorage.getItem('pos_token');
+            if (!token) {
+                errorDiv.textContent = 'You must be logged in as admin.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            try {
+                const res = await fetch('http://localhost:3000/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ username, password, role: 'CASHIER' })
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.message || 'Failed to add cashier');
+                alert('Cashier account created successfully!');
+                addCashierForm.reset();
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+            }
+        };
+    }
+});
 // JS for admin-users.html user management
 
 document.addEventListener('DOMContentLoaded', () => {

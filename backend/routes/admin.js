@@ -1,4 +1,10 @@
-// GET /api/admin/cashier-performance
+const express = require('express');
+const router = express.Router();
+const { pool } = require('../db');
+
+/* ======================================
+   GET /api/admin/cashier-performance
+====================================== */
 router.get('/cashier-performance', async (req, res) => {
   try {
     const [rows] = await pool.query(`
@@ -14,20 +20,21 @@ router.get('/cashier-performance', async (req, res) => {
       GROUP BY u.user_id
       ORDER BY total_revenue DESC
     `);
+
     res.json({ success: true, data: rows });
+
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to fetch cashier performance',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
-const express = require('express');
-const router = express.Router();
-const { pool } = require('../db');
 
-// GET /api/admin/stats
+/* ======================================
+   GET /api/admin/stats
+====================================== */
 router.get('/stats', async (req, res) => {
   try {
     const [[salesCount]] = await pool.query(
@@ -56,15 +63,17 @@ router.get('/stats', async (req, res) => {
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to fetch stats',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
-// GET /api/admin/recent-transactions
+/* ======================================
+   GET /api/admin/recent-transactions
+====================================== */
 router.get('/recent-transactions', async (req, res) => {
   try {
     const [rows] = await pool.query(`
@@ -82,15 +91,17 @@ router.get('/recent-transactions', async (req, res) => {
     res.json({ success: true, data: rows });
 
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to fetch recent transactions',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
-// GET /api/admin/low-stock
+/* ======================================
+   GET /api/admin/low-stock
+====================================== */
 router.get('/low-stock', async (req, res) => {
   try {
     const [rows] = await pool.query(`
@@ -104,15 +115,17 @@ router.get('/low-stock', async (req, res) => {
     res.json({ success: true, data: rows });
 
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to fetch low stock',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
-// GET /api/admin/active-users
+/* ======================================
+   GET /api/admin/active-users
+====================================== */
 router.get('/active-users', async (req, res) => {
   try {
     const [[result]] = await pool.query(`
@@ -124,8 +137,8 @@ router.get('/active-users', async (req, res) => {
     res.json({ success: true, count: result.count });
 
   } catch (error) {
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       message: 'Failed to fetch active users',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });

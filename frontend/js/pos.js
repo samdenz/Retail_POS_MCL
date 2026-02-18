@@ -1,11 +1,31 @@
-// Dynamically load jsPDF if not present
+
+// API base URL
+const API_BASE = "http://localhost:3000";
+
+// Dynamically load jsPDF if not present, and track readiness
+let jsPdfReady = false;
 if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
     script.onload = () => {
-        // jsPDF loaded
+        jsPdfReady = true;
     };
     document.head.appendChild(script);
+} else {
+    jsPdfReady = true;
+}
+
+// Centralized API fetch wrapper
+async function apiFetch(url, options = {}) {
+    const token = localStorage.getItem('pos_token');
+    return fetch(url, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token,
+            ...(options.headers || {})
+        }
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -216,58 +236,97 @@ document.addEventListener('DOMContentLoaded', () => {
     // CHECKOUT
     // ===============================
     if (checkoutBtn) {
-        checkoutBtn.onclick = async () => {
-
+        checkoutBtn.onclick = () => {
+            if (checkoutBtn.disabled) return; // Double click protection
             if (cart.length === 0) {
                 alert('Cart is empty');
                 return;
             }
-
-            // Disable checkout button during processing
-            checkoutBtn.disabled = true;
-            checkoutBtn.textContent = 'Processing...';
-
-            try {
-                const res = await fetch('http://localhost:3000/api/sales', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
-                    body: JSON.stringify({
-                        user_id: user.user_id,
-                        payment_method: 'CASH',
+            const paymentMethodSelect = document.getElementById('payment-method');
+            const paymentMethod = paymentMethodSelect ? paymentMethodSelect.value : 'CASH';
+            // Show custom confirmation modal
+            const modal = document.getElementById('confirm-modal');
+            const confirmTitle = document.getElementById('confirm-title');
+            const confirmDetails = document.getElementById('confirm-details');
+            const mpesaRefDiv = document.getElementById('mpesa-ref-div');
+            const mpesaRefInput = document.getElementById('mpesa-ref');
+            const receiptPreview = document.getElementById('receipt-preview');
+            if (!modal || !confirmTitle || !confirmDetails || !mpesaRefDiv || !receiptPreview) return;
+            confirmTitle.textContent = paymentMethod === 'MPESA' ? 'Confirm MPESA Payment' : 'Confirm Cash Payment';
+            confirmDetails.innerHTML = `<p><b>Total:</b> KES ${totalSpan.textContent}</p><p><b>Payment Method:</b> ${paymentMethod}</p>`;
+            mpesaRefDiv.style.display = paymentMethod === 'MPESA' ? 'block' : 'none';
+            mpesaRefInput.value = '';
+            // Receipt preview
+            let previewHtml = `<h4>Receipt Preview</h4><ul style='padding-left:0;'>`;
+            cart.forEach(item => {
+                previewHtml += `<li style='margin-bottom:4px;'>${item.title} × ${item.quantity} @ KES ${parseFloat(item.price).toFixed(2)}</li>`;
+            });
+            previewHtml += `</ul><p><b>Total:</b> KES ${totalSpan.textContent}</p>`;
+            receiptPreview.innerHTML = previewHtml;
+            receiptPreview.style.display = 'block';
+            modal.style.display = 'flex';
+            // Confirm/cancel handlers
+            const confirmBtn = document.getElementById('confirm-btn');
+            const cancelBtn = document.getElementById('cancel-btn');
+            confirmBtn.onclick = async () => {
+                // Validate MPESA reference if needed
+                if (paymentMethod === 'MPESA') {
+                    const ref = mpesaRefInput.value.trim();
+                    const mpesaRegex = /^[A-Z0-9]{8,12}$/i;
+                    if (!mpesaRegex.test(ref)) {
+                        alert('Invalid MPESA reference format.');
+                        return;
+                    }
+                }
+                modal.style.display = 'none';
+                checkoutBtn.disabled = true;
+                checkoutBtn.textContent = 'Processing...';
+                try {
+                    const body = {
+                        payment_method: paymentMethod,
                         items: cart.map(item => ({
                             book_id: item.book_id,
                             quantity: item.quantity
                         }))
-                    })
-                });
-
-                const data = await res.json();
-
-                if (!res.ok) {
-                    throw new Error(data.message || 'Sale failed');
+                    };
+                    if (paymentMethod === 'MPESA') {
+                        body.mpesa_ref = mpesaRefInput.value.trim();
+                    }
+                    const res = await apiFetch(`${API_BASE}/api/sales`, {
+                        method: 'POST',
+                        body: JSON.stringify(body)
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        throw new Error(data.message || 'Sale failed');
+                    }
+                    if (data.success) {
+                        // Success animation
+                        const successAnim = document.getElementById('success-animation');
+                        if (successAnim) {
+                            successAnim.style.display = 'flex';
+                            setTimeout(() => {
+                                successAnim.style.display = 'none';
+                            }, 1500);
+                        }
+                        if (data.sale) showReceipt(data.sale);
+                        cart = [];
+                        renderCart();
+                        fetchProducts(); // Refresh product list to update stock
+                    } else {
+                        alert(data.message || 'Sale failed');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Checkout error: ' + err.message);
+                } finally {
+                    checkoutBtn.disabled = false;
+                    checkoutBtn.textContent = 'Checkout';
                 }
-
-                if (data.success) {
-                    if (data.sale) showReceipt(data.sale);
-                    cart = [];
-                    renderCart();
-                    fetchProducts(); // Refresh product list to update stock
-                    alert('Sale completed successfully!');
-                } else {
-                    alert(data.message || 'Sale failed');
-                }
-
-            } catch (err) {
-                console.error(err);
-                alert('Checkout error: ' + err.message);
-            } finally {
-                // Re-enable checkout button
-                checkoutBtn.disabled = false;
-                checkoutBtn.textContent = 'Checkout';
-            }
+            };
+            cancelBtn.onclick = () => {
+                modal.style.display = 'none';
+            };
         };
     }
 
@@ -332,20 +391,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadReceipt = document.getElementById('download-receipt');
     if (downloadReceipt) {
         downloadReceipt.onclick = () => {
-            // PDF generation using jsPDF
-            if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
-                alert('jsPDF library not loaded.');
+            if (!jsPdfReady) {
+                alert('PDF generator still loading. Try again in a moment.');
                 return;
             }
             const jsPDF = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
             const htmlDiv = document.getElementById('receipt-html');
             if (!htmlDiv) return;
             const doc = new jsPDF();
-            // Simple text extraction from receipt HTML
-            let text = htmlDiv.innerText || htmlDiv.textContent || '';
-            // Split into lines for better formatting
-            const lines = doc.splitTextToSize(text, 180);
-            doc.text(lines, 10, 20);
+            // Professional formatting
+            doc.setFontSize(16);
+            doc.text('Bookshop Receipt', 10, 15);
+            doc.setFontSize(12);
+            let y = 25;
+            const lines = htmlDiv.innerText.split('\n');
+            lines.forEach(line => {
+                doc.text(line, 10, y);
+                y += 8;
+            });
             doc.save('receipt.pdf');
         };
     }

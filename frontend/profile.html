@@ -2,243 +2,252 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile | Retail POS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/pos.css">
 </head>
+
 <body>
-    <div class="dashboard-container">
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>Retail POS</h2>
-            </div>
-            <nav>
-                <a href="admin-dashboard.html">Dashboard</a>
-                <a href="admin-inventory.html">Inventory</a>
-                <a href="admin-reports.html">Reports</a>
-                <a href="admin-users.html">Users</a>
-                <a href="profile.html" class="active">Profile</a>
-                <button id="logout-btn">Logout</button>
-            </nav>
-        </aside>
-        <main class="main-content">
-            <h1>My Profile</h1>
-            <section>
-                <h2>Personal Info</h2>
-                <div id="personal-info">
-                    <!-- Personal info UI here -->
-                </div>
-            </section>
-            <section>
-                <h2>Change Password</h2>
-                <div id="change-password">
-                    <!-- Change password form here -->
-                </div>
-            </section>
-            <section>
-                <h2>Activity History</h2>
-                <div id="activity-history">
-                    <!-- Activity history UI here -->
-                </div>
-            </section>
-        </main>
-    </div>
-    <script>
-    // Access control: Only allow logged in users
-    const user = JSON.parse(localStorage.getItem('pos_user'));
-    if (!user || !user.role) {
-        window.location.href = 'login.html';
+<div class="dashboard-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Retail POS</h2>
+        </div>
+
+        <nav>
+            <div id="sidebar-links"></div>
+            <button id="logout-btn" class="logout-btn">Logout</button>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <h1>My Profile</h1>
+
+        <section class="profile-section">
+            <h2>Personal Information</h2>
+            <div id="personal-info"></div>
+        </section>
+
+        <section class="profile-section">
+            <h2>Change Password</h2>
+            <div id="change-password"></div>
+        </section>
+
+        <section class="profile-section">
+            <h2>Recent Activity</h2>
+            <div id="activity-history"></div>
+        </section>
+    </main>
+
+</div>
+
+<script>
+/* =========================
+   GLOBAL USER + AUTH CHECK
+========================= */
+
+const user = JSON.parse(localStorage.getItem('pos_user'));
+const token = localStorage.getItem('pos_token');
+
+if (!user || !token) {
+    window.location.href = 'login.html';
+}
+
+/* =========================
+   SIDEBAR ROLE LINKS
+========================= */
+
+function loadSidebar() {
+    const sidebarLinks = document.getElementById('sidebar-links');
+
+    if (user.role.toLowerCase() === 'admin') {
+        sidebarLinks.innerHTML = `
+            <a href="admin-dashboard.html">Dashboard</a>
+            <a href="admin-inventory.html">Inventory</a>
+            <a href="admin-reports.html">Reports</a>
+            <a href="admin-users.html">Users</a>
+            <a href="profile.html" class="active">Profile</a>
+        `;
+    } else {
+        sidebarLinks.innerHTML = `
+            <a href="pos.html">POS</a>
+            <a href="cashier-history.html">My Sales</a>
+            <a href="profile.html" class="active">Profile</a>
+        `;
     }
-    // Logout button
-    window.addEventListener('DOMContentLoaded', () => {
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                localStorage.removeItem('pos_user');
-                localStorage.removeItem('pos_token');
-                window.location.href = 'login.html';
-            });
+}
+
+/* =========================
+   LOGOUT
+========================= */
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+    localStorage.removeItem('pos_user');
+    localStorage.removeItem('pos_token');
+    window.location.href = 'login.html';
+});
+
+/* =========================
+   HELPER
+========================= */
+
+function getAuthHeaders() {
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+    };
+}
+
+/* =========================
+   LOAD PERSONAL INFO
+========================= */
+
+function loadProfileInfo() {
+    const infoDiv = document.getElementById('personal-info');
+
+    infoDiv.innerHTML = `
+        <div class="card profile-card">
+            <p><strong>Username:</strong> ${user.username}</p>
+            <p><strong>Role:</strong> <span class="badge">${user.role}</span></p>
+            <p><strong>Full Name:</strong> ${user.full_name || 'N/A'}</p>
+        </div>
+    `;
+}
+
+/* =========================
+   CHANGE PASSWORD
+========================= */
+
+function setupChangePassword() {
+    const container = document.getElementById('change-password');
+
+    container.innerHTML = `
+        <form id="change-pwd-form" class="card form-card">
+            <label>Current Password</label>
+            <input type="password" id="currentPwd" required>
+
+            <label>New Password</label>
+            <input type="password" id="newPwd" required>
+
+            <label>Confirm New Password</label>
+            <input type="password" id="confirmPwd" required>
+
+            <div id="pwdError" class="error-msg"></div>
+
+            <button type="submit" class="primary-btn">Change Password</button>
+        </form>
+    `;
+
+    document.getElementById('change-pwd-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const current = currentPwd.value;
+        const newPwd = newPwd.value;
+        const confirm = confirmPwd.value;
+        const errorDiv = document.getElementById('pwdError');
+
+        errorDiv.textContent = "";
+
+        if (newPwd.length < 6) {
+            errorDiv.textContent = "Password must be at least 6 characters.";
+            return;
         }
-        loadProfileInfo();
-        loadActivityHistory();
-        setupChangePassword();
-    });
 
-    // Display user info
-    function loadProfileInfo() {
-        const infoDiv = document.getElementById('personal-info');
-        if (!infoDiv) return;
-        infoDiv.innerHTML = `
-            <div class="card">
-                <strong>Username:</strong> ${user.username}<br>
-                <strong>Role:</strong> ${user.role}<br>
-                <strong>Full Name:</strong> ${user.full_name || 'N/A'}
-            </div>
-        `;
-    }
+        if (newPwd !== confirm) {
+            errorDiv.textContent = "New passwords do not match.";
+            return;
+        }
 
-    // Change password form
-    function setupChangePassword() {
-        const changeDiv = document.getElementById('change-password');
-        if (!changeDiv) return;
-        changeDiv.innerHTML = `
-            <form id="change-pwd-form" class="card" style="max-width:400px;">
-                <label>Current Password</label>
-                <input type="password" id="currentPwd" required><br>
-                <label>New Password</label>
-                <input type="password" id="newPwd" required><br>
-                <label>Confirm New Password</label>
-                <input type="password" id="confirmPwd" required><br>
-                <div id="pwdError" style="color:#e74c3c;margin:8px 0;display:none;"></div>
-                <button type="submit">Change Password</button>
-            </form>
-        `;
-        document.getElementById('change-pwd-form').onsubmit = async (e) => {
-            e.preventDefault();
-            const current = document.getElementById('currentPwd').value;
-            const newPwd = document.getElementById('newPwd').value;
-            const confirm = document.getElementById('confirmPwd').value;
-            const errorDiv = document.getElementById('pwdError');
-            errorDiv.style.display = 'none';
-            if (newPwd !== confirm) {
-                errorDiv.textContent = 'New passwords do not match.';
-                errorDiv.style.display = 'block';
-                return;
-            }
-            try {
-                const token = localStorage.getItem('pos_token');
-                const res = await fetch('http://localhost:3000/api/auth/change-password', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
-                    body: JSON.stringify({
-                        user_id: user.user_id,
-                        current_password: current,
-                        new_password: newPwd
-                    })
-                });
-                const data = await res.json();
-                if (!res.ok || !data.success) {
-                    throw new Error(data.message || 'Failed to change password');
-                }
-                alert('Password changed successfully!');
-                document.getElementById('change-pwd-form').reset();
-            } catch (err) {
-                errorDiv.textContent = err.message;
-                errorDiv.style.display = 'block';
-            }
-        };
-    }
-
-    // Activity history (sales)
-    async function loadActivityHistory() {
-        const historyDiv = document.getElementById('activity-history');
-        if (!historyDiv) return;
-        historyDiv.innerHTML = '<div class="card">Loading...</div>';
         try {
-            const token = localStorage.getItem('pos_token');
-            const res = await fetch(`http://localhost:3000/api/sales/user/${user.user_id}?limit=10`, {
-                headers: { 'Authorization': 'Bearer ' + token }
+            const res = await fetch('http://localhost:3000/api/auth/change-password', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({
+                    current_password: current,
+                    new_password: newPwd
+                })
             });
+
             const data = await res.json();
-            if (!res.ok || !data.success) throw new Error(data.message || 'Failed to load history');
-            if (!data.sales.length) {
-                historyDiv.innerHTML = '<div class="card">No recent activity.</div>';
-                return;
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || "Failed to change password");
             }
-            historyDiv.innerHTML = `
-                <div class="card">
-                    <strong>Recent Transactions</strong>
-                    <ul style="padding-left:0;list-style:none;">
-                        ${data.sales.map(sale => `
-                            <li style="margin-bottom:8px;">
-                                <span><b>Date:</b> ${new Date(sale.sale_date).toLocaleString()}</span><br>
-                                <span><b>Amount:</b> KES ${parseFloat(sale.total_amount).toFixed(2)}</span><br>
-                                <span><b>Payment:</b> ${sale.payment_method}</span>
-                            </li>
-                        `).join('')}
-                    </ul>
-                </div>
-            `;
+
+            alert("Password changed successfully!");
+            e.target.reset();
+
         } catch (err) {
-            historyDiv.innerHTML = `<div class="card" style="color:#e74c3c;">${err.message}</div>`;
+            errorDiv.textContent = err.message;
         }
-    }
-    </script>
-</html>
-<style>
-.dashboard-container {
-    display: flex;
-    min-height: 100vh;
+    });
 }
-.sidebar {
-    background: #222;
-    color: #fff;
-    width: 220px;
-    display: flex;
-    flex-direction: column;
-    padding: 20px 0;
-    min-height: 100vh;
-}
-.sidebar-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-.sidebar nav {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-.sidebar nav a, .sidebar nav button {
-    color: #fff;
-    background: none;
-    border: none;
-    text-align: left;
-    padding: 12px 24px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.2s;
-    text-decoration: none;
-}
-.sidebar nav a.active, .sidebar nav a:hover, .sidebar nav button:hover {
-    background: #444;
-}
-.main-content {
-    flex: 1;
-    padding: 40px;
-    background: #f5f5f5;
-}
-.main-content h1 {
-    margin-bottom: 30px;
-}
-.card {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-    padding: 24px 32px;
-    margin-bottom: 24px;
-}
-@media (max-width: 900px) {
-    .dashboard-container {
-        flex-direction: column;
-    }
-    .sidebar {
-        width: 100%;
-        min-height: auto;
-        flex-direction: row;
-        justify-content: space-between;
-        padding: 10px 0;
-    }
-    .sidebar nav {
-        flex-direction: row;
-        gap: 5px;
-    }
-    .main-content {
-        padding: 20px;
+
+/* =========================
+   LOAD ACTIVITY HISTORY
+========================= */
+
+async function loadActivityHistory() {
+    const historyDiv = document.getElementById('activity-history');
+
+    historyDiv.innerHTML = `
+        <div class="card loading-card">
+            Loading recent transactions...
+        </div>
+    `;
+
+    try {
+        const res = await fetch('http://localhost:3000/api/sales/my-sales?limit=10', {
+            headers: getAuthHeaders()
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+            throw new Error(data.message || "Failed to load history");
+        }
+
+        if (!data.sales.length) {
+            historyDiv.innerHTML = `<div class="card">No recent activity.</div>`;
+            return;
+        }
+
+        historyDiv.innerHTML = `
+            <div class="card">
+                ${data.sales.map(sale => `
+                    <div class="activity-item">
+                        <div>
+                            <strong>${new Date(sale.sale_date).toLocaleString()}</strong>
+                        </div>
+                        <div>KES ${parseFloat(sale.total_amount).toFixed(2)}</div>
+                        <div class="payment-tag">${sale.payment_method}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+    } catch (err) {
+        historyDiv.innerHTML = `
+            <div class="card error-msg">
+                ${err.message}
+            </div>
+        `;
     }
 }
-</style>
+
+/* =========================
+   INIT
+========================= */
+
+loadSidebar();
+loadProfileInfo();
+setupChangePassword();
+loadActivityHistory();
+
+</script>
+
 </body>
 </html>

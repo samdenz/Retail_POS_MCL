@@ -8,21 +8,31 @@
     <script src="js/cashier-history.js"></script>
 </head>
 <body>
-    <header>
-        <nav class="cashier-nav">
-            <a href="pos.html">POS</a>
-            <a href="cashier-history.html">My Sales</a>
-            <a href="profile.html">Profile</a>
-            <button id="logout-btn" style="float:right;">Logout</button>
-        </nav>
-        <h1>My Sales History</h1>
-    </header>
-    <main>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Retail POS</h2>
+            </div>
+            <nav>
+                <a href="pos.html">POS</a>
+                <a href="cashier-history.html" class="active">My Sales</a>
+                <a href="profile.html">Profile</a>
+                <button id="logout-btn">Logout</button>
+            </nav>
+        </aside>
+        <main class="main-content">
+            <h1>My Sales History</h1>
         <section>
             <h2>My Transactions</h2>
-            <div id="transactions-list">
-                <!-- Transactions table/list here -->
-            </div>
+                <div style="margin-bottom:16px;">
+                    <label for="filter-date">Filter by Date:</label>
+                    <input type="date" id="filter-date">
+                    <button id="filter-btn">Filter</button>
+                    <button id="print-btn">Print Report</button>
+                </div>
+                <div id="transactions-list">
+                    <!-- Transactions table/list here -->
+                </div>
         </section>
         <section>
             <h2>Daily Summary</h2>
